@@ -1,10 +1,13 @@
+## .PHONY : 使いたいターゲットと同じ名前のファイルがあってもターゲットをつかえるように登録する
 .PHONY: clean clean-model clean-pyc docs help init init-docker create-container start-container jupyter test lint profile clean clean-data clean-docker clean-container clean-image sync-from-source sync-to-source
+## .DEFAULT_GOAL : ターゲットを指定しなかった時に実行されるターゲットを登録する
 .DEFAULT_GOAL := help
 
 ###########################################################################################################
 ## SCRIPTS
 ###########################################################################################################
 
+# define : make変数の定義 => ここではpythonのscriptsをmake変数として定義してhelpターゲットで実行している
 define PRINT_HELP_PYSCRIPT
 import re, sys
 
@@ -14,6 +17,7 @@ for line in sys.stdin:
                 target, help = match.groups()
                 print("%-20s %s" % (target, help))
 endef
+# endef : make変数PRINT_HELP_PYSCRIPT 終了
 
 define START_DOCKER_CONTAINER
 if [ `$(DOCKER) inspect -f {% raw -%}{{.State.Running}}{%- endraw %} $(CONTAINER_NAME)` = "false" ] ; then
@@ -25,11 +29,13 @@ endef
 ## VARIABLES
 ###########################################################################################################
 
+# make変数を定義する
 {% if cookiecutter.use_nvidia_docker == 'yes' -%}
 export DOCKER=nvidia-docker
 {% else %}
 export DOCKER=docker
 {%- endif %}
+# make コマンド実行時の環境変数として扱いたいならexportをつける
 export PRINT_HELP_PYSCRIPT
 export START_DOCKER_CONTAINER
 export PYTHONPATH=$PYTHONPATH:$(PWD)
@@ -37,7 +43,7 @@ export PROJECT_NAME={{ cookiecutter.project_slug }}
 export IMAGE_NAME=$(PROJECT_NAME)-image
 export CONTAINER_NAME=$(PROJECT_NAME)-container
 export DATA_SOURCE={{ cookiecutter.data_source }}
-export JUPYTER_HOST_PORT={{ cookiecutter.jupyter_host_port }}
+export JUPYTER_HOST_PORT=8888
 export JUPYTER_CONTAINER_PORT=8888
 export PYTHON=python3
 export DOCKERFILE=docker/Dockerfile
